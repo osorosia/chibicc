@@ -1,0 +1,6 @@
+**/.devcontainer/
+
+**/tmp*
+**/*.o
+**/a.out
+**/chibicc
