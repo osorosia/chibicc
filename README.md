@@ -2,6 +2,9 @@
 
 ## EBNF
 ```ebnf
+program     = stmt*
+stmt        = expr-stmt
+expr-stmt   = expr ";"
 expr        = equality
 equality    = relational ("==" relational | "!=" relational)*
 relational  = add ("<" add | "<=" add | ">" add | ">=" add)*
