@@ -7,7 +7,7 @@ stmt         = "return" expr ";"
              | "{" command-stmt
              | expr-stmt
 command-stmt = stmt* "}"
-expr-stmt    = expr ";"
+expr-stmt    = expr? ";"
 expr         = assign
 assig        = equality ("=" assign)?
 equality     = relational ("==" relational | "!=" relational)*
