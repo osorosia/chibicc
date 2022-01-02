@@ -3,6 +3,8 @@
 ## EBNF
 ```ebnf
 expr    = mul ("+" mul | "-" mul)*
-mul     = primary ("*" primary | "/" primary)*
+mul     = unary ("*" unary | "/" unary)*
+unary   = ("+" | "-") unary
+        | primary
 primary = "(" expr ")" | num
 ```
