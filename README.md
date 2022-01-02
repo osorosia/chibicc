@@ -3,7 +3,8 @@
 ## EBNF
 ```ebnf
 program     = stmt*
-stmt        = expr-stmt
+stmt        = "return" expr ";"
+            | expr-stmt
 expr-stmt   = expr ";"
 expr        = assign
 assig       = equality ("=" assign)?
