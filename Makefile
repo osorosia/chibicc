@@ -6,7 +6,9 @@ OBJS = $(SRCS:.c=.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) -o $(NAME) $(OBJS) $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+$(OBJS): *.h
 
 test: $(NAME)
 	./test.sh
