@@ -4,12 +4,13 @@
 ```ebnf
 program      = stmt*
 stmt         = "return" expr ";"
+             | "if" "(" expr ")" stmt ("else" stmt)?
              | "{" command-stmt
              | expr-stmt
 command-stmt = stmt* "}"
 expr-stmt    = expr? ";"
 expr         = assign
-assig        = equality ("=" assign)?
+assign       = equality ("=" assign)?
 equality     = relational ("==" relational | "!=" relational)*
 relational   = add ("<" add | "<=" add | ">" add | ">=" add)*
 add          = mul ("+" mul | "-" mul)*
