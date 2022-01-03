@@ -1,4 +1,6 @@
 # chibicc
+This repository is "Syakyou" edition of [rui314/chibicc](https://github.com/rui314/chibicc).  
+"Syakyou" means copy with hands in Japanese.
 
 ## EBNF
 ```ebnf
