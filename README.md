@@ -5,6 +5,7 @@
 program      = stmt*
 stmt         = "return" expr ";"
              | "if" "(" expr ")" stmt ("else" stmt)?
+             | "for" "(" expr-stmt expr? ";" expr? ")" stmt
              | "{" command-stmt
              | expr-stmt
 command-stmt = stmt* "}"
