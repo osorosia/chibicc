@@ -16,30 +16,30 @@ typedef struct Node Node;
 
 // Token
 typedef enum {
-    TK_IDENT,   // Identifiers
-    TK_PUNCT,   // Punctuators
-    TK_KEYWORD, // Keywords
-    TK_NUM,     // Numeric literals
-    TK_EOF,     // End-of-file markers
+  TK_IDENT,   // Identifiers
+  TK_PUNCT,   // Punctuators
+  TK_KEYWORD, // Keywords
+  TK_NUM,     // Numeric literals
+  TK_EOF,     // End-of-file markers
 } TokenKind;
 
 // Token type
 typedef struct Token Token;
 struct Token {
-    TokenKind kind; // Token kind
-    Token *next;    // Next token
-    int val;        // If kind is TK_NUM, its value
-    char *loc;      // Token location
-    int len;        // Token length
+  TokenKind kind; // Token kind
+  Token *next;    // Next token
+  int val;        // If kind is TK_NUM, its value
+  char *loc;      // Token location
+  int len;        // Token length
 };
 
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 void error_tok(Token *tok, char *fmt, ...);
 bool equal(Token *tok, char *op);
-Token *skip(Token *tok, char *s);
+Token *skip(Token *tok, char *op);
 bool consume(Token **rest, Token *tok, char *str);
-Token *tokenize(char *p);
+Token *tokenize(char *input);
 
 //
 // parse.c
@@ -48,74 +48,74 @@ Token *tokenize(char *p);
 // Local variable
 typedef struct Obj Obj;
 struct Obj {
-    Obj *next;
-    char *name; // Variable name
-    Type *ty;   // Type
-    int offset; // Offset from RBP
+  Obj *next;
+  char *name; // Variable name
+  Type *ty;   // Type
+  int offset; // Offset from RBP
 };
 
 // Function
 typedef struct Function Function;
 struct Function {
-    Function *next;
-    char *name;
-    Obj *params;
+  Function *next;
+  char *name;
+  Obj *params;
 
-    Node *body;
-    Obj *locals;
-    int stack_size;
+  Node *body;
+  Obj *locals;
+  int stack_size;
 };
 
 // AST node
 typedef enum {
-    ND_ADD,       // +
-    ND_SUB,       // -
-    ND_MUL,       // *
-    ND_DIV,       // /
-    ND_NEG,       // unary -
-    ND_EQ,        // ==
-    ND_NE,        // !=
-    ND_LT,        // <
-    ND_LE,        // <=
-    ND_ASSIGN,    // =
-    ND_ADDR,      // unary &
-    ND_DEREF,     // unary *
-    ND_RETURN,    // "return"
-    ND_IF,        // "if"
-    ND_FOR,       // "for" or "while"
-    ND_BLOCK,     // { ... }
-    ND_FUNCALL,   // Function call
-    ND_EXPR_STMT, // Expression statement
-    ND_VAR,       // Variable
-    ND_NUM,       // Integer
+  ND_ADD,       // +
+  ND_SUB,       // -
+  ND_MUL,       // *
+  ND_DIV,       // /
+  ND_NEG,       // unary -
+  ND_EQ,        // ==
+  ND_NE,        // !=
+  ND_LT,        // <
+  ND_LE,        // <=
+  ND_ASSIGN,    // =
+  ND_ADDR,      // unary &
+  ND_DEREF,     // unary *
+  ND_RETURN,    // "return"
+  ND_IF,        // "if"
+  ND_FOR,       // "for" or "while"
+  ND_BLOCK,     // { ... }
+  ND_FUNCALL,   // Function call
+  ND_EXPR_STMT, // Expression statement
+  ND_VAR,       // Variable
+  ND_NUM,       // Integer
 } NodeKind;
 
 // AST node type
 struct Node {
-    NodeKind kind; // Node kind
-    Node *next;    // Next node
-    Type *ty;      // Type, e.g. int or pointer to int
-    Token *tok;    // Representative token
+  NodeKind kind; // Node kind
+  Node *next;    // Next node
+  Type *ty;      // Type, e.g. int or pointer to int
+  Token *tok;    // Representative token
 
-    Node *lhs;     // Left-hand side
-    Node *rhs;     // Right-hand side
+  Node *lhs;     // Left-hand side
+  Node *rhs;     // Right-hand side
 
-    // "if" or "for" statement
-    Node *cond;
-    Node *then;
-    Node *els;
-    Node *init;
-    Node *inc;
+  // "if" or "for" statement
+  Node *cond;
+  Node *then;
+  Node *els;
+  Node *init;
+  Node *inc;
 
-    // Block
-    Node *body;
+  // Block
+  Node *body;
 
-    // Function call
-    char *funcname;
-    Node *args;
+  // Function call
+  char *funcname;
+  Node *args;
 
-    Obj *var;      // Used if kind == ND_VAR
-    int val;       // Used if kind == ND_NUM
+  Obj *var;      // Used if kind == ND_VAR
+  int val;       // Used if kind == ND_NUM
 };
 
 Function *parse(Token *tok);
@@ -125,24 +125,24 @@ Function *parse(Token *tok);
 //
 
 typedef enum {
-    TY_INT,
-    TY_PTR,
-    TY_FUNC,
+  TY_INT,
+  TY_PTR,
+  TY_FUNC,
 } TypeKind;
 
 struct Type {
-    TypeKind kind;
+  TypeKind kind;
 
-    // Pointer
-    Type *base;
+  // Pointer
+  Type *base;
 
-    // Declaration
-    Token *name;
+  // Declaration
+  Token *name;
 
-    // Function type
-    Type *return_ty;
-    Type *params;
-    Type *next;
+  // Function type
+  Type *return_ty;
+  Type *params;
+  Type *next;
 };
 
 extern Type *ty_int;
