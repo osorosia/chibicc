@@ -98,12 +98,30 @@ static Type *declspec(Token **rest, Token *tok) {
     return ty_int;
 }
 
-// type-suffix = ("(" func-params)?
+// type-suffix = ("(" func-params? ")")?
+// func-params = param ("," param)*
+// param       = declspec declarator
 static Type *type_suffix(Token **rest, Token *tok, Type *ty) {
     if (equal(tok, "(")) {
-        *rest = skip(tok->next, ")");
-        return func_type(ty);
+        tok = tok->next;
+
+        Type head = {};
+        Type *cur = &head;
+
+        while (!equal(tok, ")")) {
+            if (cur != &head)
+                tok = skip(tok, ",");
+            Type *basety = declspec(&tok, tok);
+            Type *ty = declarator(&tok, tok, basety);
+            cur = cur->next = copy_type(ty);
+        }
+
+        ty = func_type(ty);
+        ty->params = head.next;
+        *rest = tok->next;
+        return ty;
     }
+
     *rest = tok;
     return ty;
 }
@@ -146,7 +164,7 @@ static Node *declaration(Token **rest, Token *tok) {
 
     Node *node = new_node(ND_BLOCK, tok);
     node->body = head.next;
-    *rest = tok;
+    *rest = tok->next;
     return node;
 }
 
@@ -154,7 +172,7 @@ static Node *declaration(Token **rest, Token *tok) {
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "for" "(" expr-stmt expr? ";" expr? ")" stmt
 //      | "while" "(" expr ")" stmt
-//      | "{" command-stmt
+//      | "{" compound-stmt
 //      | expr-stmt
 static Node *stmt(Token **rest, Token *tok) {
     if (equal(tok, "return")) {
@@ -209,7 +227,7 @@ static Node *stmt(Token **rest, Token *tok) {
     return expr_stmt(rest, tok);
 }
 
-// command-stmt = (declaration | stmt)* "}"
+// compound-stmt = (declaration | stmt)* "}"
 static Node *compound_stmt(Token **rest, Token *tok) {
     Node *node = new_node(ND_BLOCK, tok);
 
@@ -235,7 +253,7 @@ static Node *expr_stmt(Token **rest, Token *tok) {
         return new_node(ND_BLOCK, tok);
     }
 
-    Node *node =  new_node(ND_EXPR_STMT, tok);
+    Node *node = new_node(ND_EXPR_STMT, tok);
     node->lhs = expr(&tok, tok);
     *rest = skip(tok, ";");
     return node;
@@ -251,7 +269,7 @@ static Node *assign(Token **rest, Token *tok) {
     Node *node = equality(&tok, tok);
 
     if (equal(tok, "="))
-        node = new_binary(ND_ASSIGN, node, assign(&tok, tok->next), tok);
+        return new_binary(ND_ASSIGN, node, assign(rest, tok->next), tok);
 
     *rest = tok;
     return node;
@@ -279,8 +297,8 @@ static Node *equality(Token **rest, Token *tok) {
     }
 }
 
-// relational = add ("<" add | "<=" add | ">" add | ">=" add)
-Node *relational(Token **rest, Token *tok) {
+// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+static Node *relational(Token **rest, Token *tok) {
     Node *node = add(&tok, tok);
 
     for (;;) {
@@ -327,7 +345,7 @@ static Node *new_add(Node *lhs, Node *rhs, Token *tok) {
     if (lhs->ty->base && rhs->ty->base)
         error_tok(tok, "invalid operands");
     
-    // Canonicalize `num + ptr` to `ptr + num`
+    // Canonicalize `num + ptr` to `ptr + num`.
     if (!lhs->ty->base && rhs->ty->base) {
         Node *tmp = lhs;
         lhs = rhs;
@@ -389,7 +407,7 @@ static Node *add(Token **rest, Token *tok) {
     }
 }
 
-// mul = unary ("*" unary | "/" unary)
+// mul = unary ("*" unary | "/" unary)*
 static Node *mul(Token **rest, Token *tok) {
     Node *node = unary(&tok, tok);
 
@@ -426,7 +444,7 @@ static Node *unary(Token **rest, Token *tok) {
     if (equal(tok, "*"))
         return new_unary(ND_DEREF, unary(rest, tok->next), tok);
 
-    return (primary(rest, tok));
+    return primary(rest, tok);
 }
 
 // funcall = ident "(" (assign ("," assign)*)? ")"
@@ -445,7 +463,7 @@ static Node *funcall(Token **rest, Token *tok) {
 
     *rest = skip(tok, ")");
     
-    Node *node = new_node(ND_FUNCALL, tok);
+    Node *node = new_node(ND_FUNCALL, start);
     node->funcname = strndup(start->loc, start->len);
     node->args = head.next;
     return node;
@@ -481,6 +499,13 @@ static Node *primary(Token **rest, Token *tok) {
     error_tok(tok, "expected an expression");
 }
 
+static void create_param_lvars(Type *param) {
+    if (param) {
+        create_param_lvars(param->next);
+        new_lvar(get_ident(param->name), param);
+    }
+}
+
 static Function *function(Token **rest, Token *tok) {
     Type *ty = declspec(&tok, tok);
     ty = declarator(&tok, tok, ty);
@@ -489,6 +514,8 @@ static Function *function(Token **rest, Token *tok) {
 
     Function *fn = calloc(1, sizeof(Function));
     fn->name = get_ident(ty->name);
+    create_param_lvars(ty->params);
+    fn->params = locals;
 
     tok = skip(tok, "{");
     fn->body = compound_stmt(rest, tok);

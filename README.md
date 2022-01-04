@@ -16,7 +16,9 @@ compound-stmt = (declaration | stmt)* "}"
 declaration   = declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
 declspec      = "int"
 declarator    = "*"* ident type-suffix
-type-suffix   = "(" func-params? ")"
+type-suffix   = ("(" func-params? ")")?
+func-params   = param ("," param)*
+param         = declspec declarator
 expr-stmt     = expr? ";"
 expr          = assign
 assign        = equality ("=" assign)?

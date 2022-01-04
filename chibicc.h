@@ -16,7 +16,7 @@ typedef struct Node Node;
 
 // Token
 typedef enum {
-    TK_IDENT,   // Identifier
+    TK_IDENT,   // Identifiers
     TK_PUNCT,   // Punctuators
     TK_KEYWORD, // Keywords
     TK_NUM,     // Numeric literals
@@ -38,7 +38,7 @@ void error_at(char *loc, char *fmt, ...);
 void error_tok(Token *tok, char *fmt, ...);
 bool equal(Token *tok, char *op);
 Token *skip(Token *tok, char *s);
-bool consume(Token **rest, Token *tok, char *s);
+bool consume(Token **rest, Token *tok, char *str);
 Token *tokenize(char *p);
 
 //
@@ -59,6 +59,8 @@ typedef struct Function Function;
 struct Function {
     Function *next;
     char *name;
+    Obj *params;
+
     Node *body;
     Obj *locals;
     int stack_size;
@@ -139,11 +141,14 @@ struct Type {
 
     // Function type
     Type *return_ty;
+    Type *params;
+    Type *next;
 };
 
 extern Type *ty_int;
 
 bool is_integer(Type *ty);
+Type *copy_type(Type *ty);
 Type *pointer_to(Type *base);
 Type *func_type(Type *return_ty);
 void add_type(Node *node);
