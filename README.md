@@ -11,7 +11,10 @@ stmt         = "return" expr ";"
              | "while" "(" expr ")" stmt
              | "{" command-stmt
              | expr-stmt
-command-stmt = stmt* "}"
+command-stmt = (declaration | stmt)* "}"
+declaration  = declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
+declspec     = "int"
+declarator   = "*"* ident
 expr-stmt    = expr? ";"
 expr         = assign
 assign       = equality ("=" assign)?
