@@ -1,8 +1,11 @@
 **/.devcontainer/
 **/.vscode/
+**/.vscode-server/
+**/.ssh/
 
 **/tmp*
 **/temp*
 **/*.o
 **/a.out
 **/chibicc
+**/.gitconfig
