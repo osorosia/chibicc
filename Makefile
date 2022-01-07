@@ -11,7 +11,7 @@ $(NAME): $(OBJS)
 $(OBJS): *.h
 
 test: $(NAME)
-	./test.sh
+	bash test.sh
 
 clean:
 	rm -f chibicc $(OBJS) *~ tmp*
